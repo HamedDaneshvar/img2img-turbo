@@ -1,16 +1,35 @@
 # img2img-turbo
 
+**This repository is a pip-installable Python package + CPU/GPU compatibility wrapper** for the original **img2img-turbo** project by Gaurav Parmar et al.
+
+**Original project & code:**  
+[https://github.com/GaParmar/img2img-turbo](https://github.com/GaParmar/img2img-turbo)  
+Please star the original repo if you find this work useful!
+
+**Paper:** [One-Step Image Translation with Text-to-Image Models](https://arxiv.org/abs/2403.12036)  
+**Authors:** Gaurav Parmar, Taesung Park, Srinivasa Narasimhan, Jun-Yan Zhu  
+**Hugging Face Demo:** [gparmar/img2img-turbo-sketch](https://huggingface.co/spaces/gparmar/img2img-turbo-sketch)
+
+**This packaged version (pip + CPU support):**  
+[https://github.com/HamedDaneshvar/img2img-turbo](https://github.com/HamedDaneshvar/img2img-turbo)
+
+Contributions welcome: issues, PRs, new models, better docs, etc.
+
+---
+
+[**Quick start:** Running Locally](#getting-started) · [**Gradio Demo**](#gradio-demo) · [**Training**](#training-with-your-own-data)
+
 [**Paper**](https://arxiv.org/abs/2403.12036) | [**Sketch2Image Demo**](https://huggingface.co/spaces/gparmar/img2img-turbo-sketch) 
 #### **Quick start:** [**Running Locally**](#getting-started) | [**Gradio (locally hosted)**](#gradio-demo) | [**Training**](#training-with-your-own-data)
 
 ### Cat Sketching
 <p align="left" >
-<img src="https://raw.githubusercontent.com/GaParmar/img2img-turbo/main/assets/cat_2x.gif" width="800" />
+<img src="https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/cat_2x.gif" width="800" />
 </p>
 
 ### Fish Sketching
 <p align="left">
-<img src="https://raw.githubusercontent.com/GaParmar/img2img-turbo/main/assets/fish_2x.gif"  width="800" />
+<img src="https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/fish_2x.gif"  width="800" />
 </p>
 
 
@@ -25,7 +44,7 @@ CMU and Adobe, arXiv 2403.12036
 <br>
 <div>
 <p align="center">
-<img src='assets/teaser_results.jpg' align="center" width=1000px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/teaser_results.jpg' align="center" width=1000px>
 </p>
 </div>
 
@@ -38,7 +57,7 @@ CMU and Adobe, arXiv 2403.12036
 **Edge to Image**
 <div>
 <p align="center">
-<img src='assets/edge_to_image_results.jpg' align="center" width=800px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/edge_to_image_results.jpg' align="center" width=800px>
 </p>
 </div>
 
@@ -48,32 +67,32 @@ TODO -->
 By varying the input noise map, our method can generate diverse outputs from the same input conditioning.
 The output style can be controlled by changing the text prompt.
 <div> <p align="center">
-<img src='assets/gen_variations.jpg' align="center" width=800px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/gen_variations.jpg' align="center" width=800px>
 </p> </div>
 
 ### Unpaired Translation with CycleGAN-Turbo
 
 **Day to Night**
 <div> <p align="center">
-<img src='assets/day2night_results.jpg' align="center" width=800px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/day2night_results.jpg' align="center" width=800px>
 </p> </div>
 
 **Night to Day**
 <div><p align="center">
-<img src='assets/night2day_results.jpg' align="center" width=800px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/night2day_results.jpg' align="center" width=800px>
 </p> </div>
 
 **Clear to Rainy**
 <div>
 <p align="center">
-<img src='assets/clear2rainy_results.jpg' align="center" width=800px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/clear2rainy_results.jpg' align="center" width=800px>
 </p>
 </div>
 
 **Rainy to Clear**
 <div>
 <p align="center">
-<img src='assets/rainy2clear.jpg' align="center" width=800px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/rainy2clear.jpg' align="center" width=800px>
 </p>
 </div>
 <hr>
@@ -84,7 +103,7 @@ The output style can be controlled by changing the text prompt.
 We tightly integrate three separate modules in the original latent diffusion models into a single end-to-end network with small trainable weights. This architecture allows us to translate the input image x to the output y, while retaining the input scene structure. We use LoRA adapters in each module, introduce skip connections and Zero-Convs between input and output, and retrain the first layer of the U-Net. Blue boxes indicate trainable layers. Semi-transparent layers are frozen. The same generator can be used for various GAN objectives.
 <div>
 <p align="center">
-<img src='assets/method.jpg' align="center" width=900px>
+<img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/method.jpg' align="center" width=900px>
 </p>
 </div>
 
@@ -119,9 +138,9 @@ We tightly integrate three separate modules in the original latent diffusion mod
     <th>Model Output</th>
     </tr>
     <tr>
-    <td><img src='assets/examples/bird.png' width="200px"></td>
-    <td><img src='assets/examples/bird_canny.png' width="200px"></td>
-    <td><img src='assets/examples/bird_canny_blue.png' width="200px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/bird.png' width="200px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/bird_canny.png' width="200px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/bird_canny_blue.png' width="200px"></td>
     </tr>
     </table>
     <br>
@@ -138,8 +157,8 @@ We tightly integrate three separate modules in the original latent diffusion mod
     <th>Model Output</th>
     </tr>
     <tr>
-    <td><img src='assets/examples/sketch_input.png' width="400px"></td>
-    <td><img src='assets/examples/sketch_output.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/sketch_input.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/sketch_output.png' width="400px"></td>
     </tr>
     </table>
     <br>
@@ -155,8 +174,8 @@ We tightly integrate three separate modules in the original latent diffusion mod
     <th>Model Output (night)</th>
     </tr>
     <tr>
-    <td><img src='assets/examples/day2night_input.png' width="400px"></td>
-    <td><img src='assets/examples/day2night_output.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/day2night_input.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/day2night_output.png' width="400px"></td>
     </tr>
     </table>
 
@@ -170,8 +189,8 @@ We tightly integrate three separate modules in the original latent diffusion mod
     <th>Model Output (day)</th>
     </tr>
     <tr>
-    <td><img src='assets/examples/night2day_input.png' width="400px"></td>
-    <td><img src='assets/examples/night2day_output.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/night2day_input.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/night2day_output.png' width="400px"></td>
     </tr>
     </table>
 
@@ -185,8 +204,8 @@ We tightly integrate three separate modules in the original latent diffusion mod
     <th>Model Output (rainy)</th>
     </tr>
     <tr>
-    <td><img src='assets/examples/clear2rainy_input.png' width="400px"></td>
-    <td><img src='assets/examples/clear2rainy_output.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/clear2rainy_input.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/clear2rainy_output.png' width="400px"></td>
     </tr>
     </table>
 
@@ -200,8 +219,8 @@ We tightly integrate three separate modules in the original latent diffusion mod
     <th>Model Output (clear)</th>
     </tr>
     <tr>
-    <td><img src='assets/examples/rainy2clear_input.png' width="400px"></td>
-    <td><img src='assets/examples/rainy2clear_output.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/rainy2clear_input.png' width="400px"></td>
+    <td><img src='https://raw.githubusercontent.com/HamedDaneshvar/img2img-turbo/main/assets/examples/rainy2clear_output.png' width="400px"></td>
     </tr>
     </table>
 
