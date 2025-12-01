@@ -2,7 +2,7 @@
 img2img_turbo_wrapper package.
 
 Public API:
-- run_inference: Main inference entry point
+- run_inference_paired: Main inference paired entry point
 """
 
 # Apply CPU compatibility patches as soon as the package is imported
@@ -20,6 +20,6 @@ except ImportError:
     pass
 
 
-from .api import run_inference
+from .api import run_inference_paired
 
-__all__ = ["run_inference"]
+__all__ = ["run_inference_paired"]

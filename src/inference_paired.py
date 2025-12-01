@@ -9,7 +9,7 @@ from pix2pix_turbo import Pix2Pix_Turbo
 from image_prep import canny_from_pil
 
 
-def run_inference(
+def run_inference_paired(
     input_image: str,
     prompt: str,
     model_name: str = "",
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument('--use_fp16', action='store_true', help='Use Float16 precision for faster inference')
     args = parser.parse_args()
 
-    run_inference(
+    run_inference_paired(
         input_image=args.input_image,
         prompt=args.prompt,
         model_name=args.model_name,
