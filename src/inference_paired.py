@@ -8,6 +8,74 @@ import torchvision.transforms.functional as F
 from pix2pix_turbo import Pix2Pix_Turbo
 from image_prep import canny_from_pil
 
+
+def run_inference(
+    input_image: str,
+    prompt: str,
+    model_name: str = "",
+    model_path: str = "",
+    output_dir: str = "output",
+    low_threshold: int = 100,
+    high_threshold: int = 200,
+    gamma: float = 0.4,
+    seed: int = 42,
+    use_fp16: bool = False,
+):
+    input_image_path = input_image
+
+    # only one of model_name and model_path should be provided
+    if model_name == '' != model_path == '':
+        raise ValueError('Either model_name or model_path should be provided')
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # initialize the model
+    model = Pix2Pix_Turbo(pretrained_name=model_name, pretrained_path=model_path)
+    model.set_eval()
+    if use_fp16:
+        model.half()
+
+    # make sure that the input image is a multiple of 8
+    input_image = Image.open(input_image_path).convert('RGB')
+    new_width = input_image.width - input_image.width % 8
+    new_height = input_image.height - input_image.height % 8
+    input_image = input_image.resize((new_width, new_height), Image.LANCZOS)
+    bname = os.path.basename(input_image_path)
+
+    # translate the image
+    with torch.no_grad():
+        if model_name == 'edge_to_image':
+            canny = canny_from_pil(input_image, low_threshold, high_threshold)
+            canny_viz_inv = Image.fromarray(255 - np.array(canny))
+            canny_viz_inv.save(os.path.join(output_dir, bname.replace('.png', '_canny.png')))
+            c_t = F.to_tensor(canny).unsqueeze(0).cuda()
+            if use_fp16:
+                c_t = c_t.half()
+            output_image = model(c_t, prompt)
+
+        elif model_name == 'sketch_to_image_stochastic':
+            image_t = F.to_tensor(input_image) < 0.5
+            c_t = image_t.unsqueeze(0).cuda().float()
+            torch.manual_seed(seed)
+            B, C, H, W = c_t.shape
+            noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
+            if use_fp16:
+                c_t = c_t.half()
+                noise = noise.half()
+            output_image = model(c_t, prompt, deterministic=False, r=gamma, noise_map=noise)
+
+        else:
+            c_t = F.to_tensor(input_image).unsqueeze(0).cuda()
+            if use_fp16:
+                c_t = c_t.half()
+            output_image = model(c_t, prompt)
+
+        output_pil = transforms.ToPILImage()(output_image[0].cpu() * 0.5 + 0.5)
+
+    # save the output image
+    output_pil.save(os.path.join(output_dir, bname))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_image', type=str, required=True, help='path to the input image')
@@ -22,54 +90,15 @@ if __name__ == "__main__":
     parser.add_argument('--use_fp16', action='store_true', help='Use Float16 precision for faster inference')
     args = parser.parse_args()
 
-    # only one of model_name and model_path should be provided
-    if args.model_name == '' != args.model_path == '':
-        raise ValueError('Either model_name or model_path should be provided')
-
-    os.makedirs(args.output_dir, exist_ok=True)
-
-    # initialize the model
-    model = Pix2Pix_Turbo(pretrained_name=args.model_name, pretrained_path=args.model_path)
-    model.set_eval()
-    if args.use_fp16:
-        model.half()
-
-    # make sure that the input image is a multiple of 8
-    input_image = Image.open(args.input_image).convert('RGB')
-    new_width = input_image.width - input_image.width % 8
-    new_height = input_image.height - input_image.height % 8
-    input_image = input_image.resize((new_width, new_height), Image.LANCZOS)
-    bname = os.path.basename(args.input_image)
-
-    # translate the image
-    with torch.no_grad():
-        if args.model_name == 'edge_to_image':
-            canny = canny_from_pil(input_image, args.low_threshold, args.high_threshold)
-            canny_viz_inv = Image.fromarray(255 - np.array(canny))
-            canny_viz_inv.save(os.path.join(args.output_dir, bname.replace('.png', '_canny.png')))
-            c_t = F.to_tensor(canny).unsqueeze(0).cuda()
-            if args.use_fp16:
-                c_t = c_t.half()
-            output_image = model(c_t, args.prompt)
-
-        elif args.model_name == 'sketch_to_image_stochastic':
-            image_t = F.to_tensor(input_image) < 0.5
-            c_t = image_t.unsqueeze(0).cuda().float()
-            torch.manual_seed(args.seed)
-            B, C, H, W = c_t.shape
-            noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)
-            if args.use_fp16:
-                c_t = c_t.half()
-                noise = noise.half()
-            output_image = model(c_t, args.prompt, deterministic=False, r=args.gamma, noise_map=noise)
-
-        else:
-            c_t = F.to_tensor(input_image).unsqueeze(0).cuda()
-            if args.use_fp16:
-                c_t = c_t.half()
-            output_image = model(c_t, args.prompt)
-
-        output_pil = transforms.ToPILImage()(output_image[0].cpu() * 0.5 + 0.5)
-
-    # save the output image
-    output_pil.save(os.path.join(args.output_dir, bname))
+    run_inference(
+        input_image=args.input_image,
+        prompt=args.prompt,
+        model_name=args.model_name,
+        model_path=args.model_path,
+        output_dir=args.output_dir,
+        low_threshold=args.low_threshold,
+        high_threshold=args.high_threshold,
+        gamma=args.gamma,
+        seed=args.seed,
+        use_fp16=args.use_fp16,
+    )
