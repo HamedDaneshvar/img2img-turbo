@@ -1,0 +1,67 @@
+[project]
+name = "img2img-turbo"
+version = "0.1.0"
+description = "Wrapper package for img2img-turbo with python API"
+readme = "README.md"
+authors = [
+    { name = "Hamed Daneshvar", email = "96017552+HamedDaneshvar@users.noreply.github.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    # "clip @ git+https://github.com/openai/CLIP.git",  # Commented out: PyPI/TestPyPI do not allow direct git dependencies in package metadata.
+    # Replaced with open-clip-torch + monkey-patch (see src/img2img_turbo_wrapper/clip_patch.py) to maintain compatibility
+    # with the original training script while keeping the package uploadable to PyPI.
+    "einops~=0.8.1",
+    "numpy~=2.0.2",
+    "open-clip-torch~=3.2.0",  # Provides near-identical CLIP functionality (including original OpenAI weights via pretrained='openai')
+    "opencv-python~=4.12.0.88",
+    "pillow~=11.3.0",
+    "scipy~=1.16.3",
+    "timm~=1.0.22",
+    "tokenizers~=0.22.1",
+    "torch==2.9.0",
+    "wandb~=0.23.0",
+    "torchaudio==2.9.0",
+    "torchdata~=0.11.0",
+    "torchmetrics~=1.8.2",
+    "torchvision==0.24.0",
+    "huggingface-hub[hf_xet]~=0.36.0",
+    "tqdm~=4.67.1",
+    "transformers~=4.57.2",
+    "urllib3~=2.5.0",
+    "streamlit-keyup~=0.3.0",
+    "lpips~=0.1.4",
+    "clean-fid~=0.1.35",
+    "peft~=0.18.0",
+    "dominate~=2.9.1",
+    "diffusers~=0.35.2",
+    "gradio~=5.50.0",
+    "vision_aided_loss~=0.1.0"
+]
+
+[project.optional-dependencies]
+gpu = [
+    "xformers~=0.0.33.post1"
+]
+
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/img2img_turbo_wrapper", "src/my_utils"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/cyclegan_turbo.py" = "cyclegan_turbo.py"
+"src/image_prep.py" = "image_prep.py"
+"src/inference_paired.py" = "inference_paired.py"
+"src/inference_unpaired.py" = "inference_unpaired.py"
+"src/model.py" = "model.py"
+"src/pix2pix_turbo.py" = "pix2pix_turbo.py"
+"src/train_cyclegan_turbo.py" = "train_cyclegan_turbo.py"
+"src/train_pix2pix_turbo.py" = "train_pix2pix_turbo.py"
+"gradio_canny2image.py" = "gradio_canny2image.py"
+"gradio_sketch2image.py" = "gradio_sketch2image.py"
