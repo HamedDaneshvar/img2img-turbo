@@ -7,7 +7,7 @@ Public API:
 
 # Apply CPU compatibility patches as soon as the package is imported
 try:
-    import img2img_turbo_wrapper.cpu_patch  # type: ignore
+    import img2img_turbo.cpu_patch  # type: ignore
 except ImportError:
     pass
 
@@ -15,7 +15,7 @@ except ImportError:
 # Apply CLIP patch (must be before any 'import clip' in code)
 try:
     # Note: We didn't test this.
-    import img2img_turbo_wrapper.clip_patch
+    import img2img_turbo.clip_patch
 except ImportError:
     pass
 
@@ -23,3 +23,4 @@ except ImportError:
 from .api import run_inference_paired
 
 __all__ = ["run_inference_paired"]
+__version__ = "0.0.1"
