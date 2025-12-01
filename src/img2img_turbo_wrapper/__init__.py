@@ -12,6 +12,14 @@ except ImportError:
     pass
 
 
+# Apply CLIP patch (must be before any 'import clip' in code)
+try:
+    # Note: We didn't test this.
+    import img2img_turbo_wrapper.clip_patch
+except ImportError:
+    pass
+
+
 from .api import run_inference
 
 __all__ = ["run_inference"]
