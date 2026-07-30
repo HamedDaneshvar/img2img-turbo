@@ -39,6 +39,11 @@ dependencies = [
     "vision_aided_loss>=0.1.0"
 ]
 
+[dependency-groups]
+dev = [
+    "nox>=2026.4.10",
+]
+
 [project.optional-dependencies]
 gpu = [
     "xformers>=0.0.33.post1"
