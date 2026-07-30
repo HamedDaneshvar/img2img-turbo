@@ -649,7 +649,7 @@ wheels = [
 
 [[package]]
 name = "img2img-turbo"
-version = "0.0.1"
+version = "0.0.2"
 source = { editable = "." }
 dependencies = [
     { name = "clean-fid" },
@@ -687,33 +687,33 @@ gpu = [
 
 [package.metadata]
 requires-dist = [
-    { name = "clean-fid", specifier = "~=0.1.35" },
-    { name = "diffusers", specifier = "~=0.35.2" },
-    { name = "dominate", specifier = "~=2.9.1" },
-    { name = "einops", specifier = "~=0.8.1" },
-    { name = "gradio", specifier = "~=5.50.0" },
-    { name = "huggingface-hub", extras = ["hf-xet"], specifier = "~=0.36.0" },
-    { name = "lpips", specifier = "~=0.1.4" },
-    { name = "numpy", specifier = "~=2.0.2" },
-    { name = "open-clip-torch", specifier = "~=3.2.0" },
-    { name = "opencv-python", specifier = "~=4.12.0.88" },
-    { name = "peft", specifier = "~=0.18.0" },
-    { name = "pillow", specifier = "~=11.3.0" },
-    { name = "scipy", specifier = "~=1.16.3" },
-    { name = "streamlit-keyup", specifier = "~=0.3.0" },
-    { name = "timm", specifier = "~=1.0.22" },
-    { name = "tokenizers", specifier = "~=0.22.1" },
-    { name = "torch", specifier = "==2.9.0" },
-    { name = "torchaudio", specifier = "==2.9.0" },
-    { name = "torchdata", specifier = "~=0.11.0" },
-    { name = "torchmetrics", specifier = "~=1.8.2" },
-    { name = "torchvision", specifier = "==0.24.0" },
-    { name = "tqdm", specifier = "~=4.67.1" },
-    { name = "transformers", specifier = "~=4.57.2" },
-    { name = "urllib3", specifier = "~=2.5.0" },
-    { name = "vision-aided-loss", specifier = "~=0.1.0" },
-    { name = "wandb", specifier = "~=0.23.0" },
-    { name = "xformers", marker = "extra == 'gpu'", specifier = "~=0.0.33.post1" },
+    { name = "clean-fid", specifier = ">=0.1.35" },
+    { name = "diffusers", specifier = ">=0.35.2" },
+    { name = "dominate", specifier = ">=2.9.1" },
+    { name = "einops", specifier = ">=0.8.1" },
+    { name = "gradio", specifier = ">=5.50.0" },
+    { name = "huggingface-hub", extras = ["hf-xet"], specifier = ">=0.36.0" },
+    { name = "lpips", specifier = ">=0.1.4" },
+    { name = "numpy", specifier = ">=2.0.2" },
+    { name = "open-clip-torch", specifier = ">=3.2.0" },
+    { name = "opencv-python", specifier = ">=4.12.0.88" },
+    { name = "peft", specifier = ">=0.18.0" },
+    { name = "pillow", specifier = ">=11.3.0" },
+    { name = "scipy", specifier = ">=1.16.3" },
+    { name = "streamlit-keyup", specifier = ">=0.3.0" },
+    { name = "timm", specifier = ">=1.0.22" },
+    { name = "tokenizers", specifier = ">=0.22.1" },
+    { name = "torch", specifier = ">=2.9.0" },
+    { name = "torchaudio", specifier = ">=2.9.0" },
+    { name = "torchdata", specifier = ">=0.11.0" },
+    { name = "torchmetrics", specifier = ">=1.8.2" },
+    { name = "torchvision", specifier = ">=0.24.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "transformers", specifier = ">=4.57.2" },
+    { name = "urllib3", specifier = ">=2.5.0" },
+    { name = "vision-aided-loss", specifier = ">=0.1.0" },
+    { name = "wandb", specifier = ">=0.23.0" },
+    { name = "xformers", marker = "extra == 'gpu'", specifier = ">=0.0.33.post1" },
 ]
 provides-extras = ["gpu"]
 
