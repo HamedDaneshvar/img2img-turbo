@@ -188,12 +188,33 @@ class Pix2Pix_Turbo(torch.nn.Module):
         assert (prompt is None) != (prompt_tokens is None), "Either prompt or prompt_tokens should be provided"
 
         if prompt is not None:
-            # encode the text prompt
-            caption_tokens = self.tokenizer(prompt, max_length=self.tokenizer.model_max_length,
-                                            padding="max_length", truncation=True, return_tensors="pt").input_ids.cuda()
-            caption_enc = self.text_encoder(caption_tokens)[0]
+            max_length = min(
+                self.tokenizer.model_max_length,
+                self.text_encoder.config.max_position_embeddings,
+            )
+
+            device = next(self.text_encoder.parameters()).device
+            caption_tokens = self.tokenizer(
+                prompt,
+                max_length=max_length,
+                padding="max_length",
+                truncation=True,
+                return_tensors="pt",
+            ).input_ids.to(device)
         else:
-            caption_enc = self.text_encoder(prompt_tokens)[0]
+            caption_tokens = prompt_tokens
+            device = caption_tokens.device
+
+        seq_len = caption_tokens.shape[1]
+        position_ids = torch.arange(seq_len, device=device).unsqueeze(0).expand(
+            caption_tokens.shape[0], -1
+        )
+
+        caption_enc = self.text_encoder(
+            input_ids=caption_tokens,
+            position_ids=position_ids,
+        )[0]
+
         if deterministic:
             encoded_control = self.vae.encode(c_t).latent_dist.sample() * self.vae.config.scaling_factor
             model_pred = self.unet(encoded_control, self.timesteps, encoder_hidden_states=caption_enc,).sample

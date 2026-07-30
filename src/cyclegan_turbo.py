@@ -248,7 +248,26 @@ class CycleGAN_Turbo(torch.nn.Module):
         if caption_emb is not None:
             caption_enc = caption_emb
         else:
-            caption_tokens = self.tokenizer(caption, max_length=self.tokenizer.model_max_length,
-                    padding="max_length", truncation=True, return_tensors="pt").input_ids.to(x_t.device)
-            caption_enc = self.text_encoder(caption_tokens)[0].detach().clone()
+            max_length = min(
+                self.tokenizer.model_max_length,
+                self.text_encoder.config.max_position_embeddings,
+            )
+            caption_tokens = self.tokenizer(
+                caption,
+                max_length=max_length,
+                padding="max_length",
+                truncation=True,
+                return_tensors="pt",
+            ).input_ids.to(x_t.device)
+
+            seq_len = caption_tokens.shape[1]
+            position_ids = torch.arange(seq_len, device=x_t.device).unsqueeze(0).expand(
+                caption_tokens.shape[0], -1
+            )
+
+            caption_enc = self.text_encoder(
+                input_ids=caption_tokens,
+                position_ids=position_ids,
+            )[0].detach().clone()
+
         return self.forward_with_networks(x_t, direction, self.vae_enc, self.unet, self.vae_dec, self.sched, self.timesteps, caption_enc)

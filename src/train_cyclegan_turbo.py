@@ -137,10 +137,39 @@ def main(args):
     net_lpips.cuda()
     net_lpips.requires_grad_(False)
 
-    fixed_a2b_tokens = tokenizer(fixed_caption_tgt, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt").input_ids[0]
-    fixed_a2b_emb_base = text_encoder(fixed_a2b_tokens.cuda().unsqueeze(0))[0].detach()
-    fixed_b2a_tokens = tokenizer(fixed_caption_src, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt").input_ids[0]
-    fixed_b2a_emb_base = text_encoder(fixed_b2a_tokens.cuda().unsqueeze(0))[0].detach()
+    max_length = min(
+        tokenizer.model_max_length,
+        text_encoder.config.max_position_embeddings,
+    )
+
+    fixed_a2b_tokens = tokenizer(
+        fixed_caption_tgt,
+        max_length=max_length,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt",
+    ).input_ids.to(text_encoder.device)
+
+    fixed_b2a_tokens = tokenizer(
+        fixed_caption_src,
+        max_length=max_length,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt",
+    ).input_ids.to(text_encoder.device)
+
+    seq_len = fixed_a2b_tokens.shape[1]
+    position_ids = torch.arange(seq_len, device=fixed_a2b_tokens.device).unsqueeze(0)
+
+    fixed_a2b_emb_base = text_encoder(
+        input_ids=fixed_a2b_tokens,
+        position_ids=position_ids,
+    )[0].detach()
+
+    fixed_b2a_emb_base = text_encoder(
+        input_ids=fixed_b2a_tokens,
+        position_ids=position_ids,
+    )[0].detach()
     del text_encoder, tokenizer  # free up some memory
 
     unet, vae_enc, vae_dec, net_disc_a, net_disc_b = accelerator.prepare(unet, vae_enc, vae_dec, net_disc_a, net_disc_b)

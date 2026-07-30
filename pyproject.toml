@@ -1,6 +1,6 @@
 [project]
 name = "img2img-turbo"
-version = "0.0.2"
+version = "0.0.3"
 description = "Wrapper package for img2img-turbo with python API"
 readme = "README.md"
 authors = [
@@ -25,16 +25,16 @@ dependencies = [
     "torchdata>=0.11.0",
     "torchmetrics>=1.8.2",
     "torchvision>=0.24.0",
-    "huggingface-hub[hf_xet]>=0.36.0",
+    "huggingface-hub[hf_xet]>=1.23.0",
     "tqdm>=4.67.1",
-    "transformers>=4.57.2",
+    "transformers>=5.13.1",
     "urllib3>=2.5.0",
     "streamlit-keyup>=0.3.0",
     "lpips>=0.1.4",
     "clean-fid>=0.1.35",
-    "peft>=0.18.0",
+    "peft>=0.19.1",
     "dominate>=2.9.1",
-    "diffusers>=0.35.2",
+    "diffusers>=0.39.0",
     "gradio>=5.50.0",
     "vision_aided_loss>=0.1.0"
 ]
