@@ -697,16 +697,14 @@ wheels = [
 
 [[package]]
 name = "img2img-turbo"
-version = "0.0.3"
+version = "0.0.4"
 source = { editable = "." }
 dependencies = [
-    { name = "clean-fid" },
     { name = "diffusers" },
     { name = "dominate" },
     { name = "einops" },
     { name = "gradio" },
     { name = "huggingface-hub", extra = ["hf-xet"] },
-    { name = "lpips" },
     { name = "numpy" },
     { name = "open-clip-torch" },
     { name = "opencv-python" },
@@ -724,13 +722,17 @@ dependencies = [
     { name = "tqdm" },
     { name = "transformers" },
     { name = "urllib3" },
-    { name = "vision-aided-loss" },
-    { name = "wandb" },
 ]
 
 [package.optional-dependencies]
 gpu = [
     { name = "xformers" },
+]
+train = [
+    { name = "clean-fid" },
+    { name = "lpips" },
+    { name = "vision-aided-loss" },
+    { name = "wandb" },
 ]
 
 [package.dev-dependencies]
@@ -740,13 +742,13 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "clean-fid", specifier = ">=0.1.35" },
+    { name = "clean-fid", marker = "extra == 'train'", specifier = ">=0.1.35" },
     { name = "diffusers", specifier = ">=0.39.0" },
     { name = "dominate", specifier = ">=2.9.1" },
     { name = "einops", specifier = ">=0.8.1" },
     { name = "gradio", specifier = ">=5.50.0" },
     { name = "huggingface-hub", extras = ["hf-xet"], specifier = ">=1.23.0" },
-    { name = "lpips", specifier = ">=0.1.4" },
+    { name = "lpips", marker = "extra == 'train'", specifier = ">=0.1.4" },
     { name = "numpy", specifier = ">=2.0.2" },
     { name = "open-clip-torch", specifier = ">=3.2.0" },
     { name = "opencv-python", specifier = ">=4.12.0.88" },
@@ -764,11 +766,11 @@ requires-dist = [
     { name = "tqdm", specifier = ">=4.67.1" },
     { name = "transformers", specifier = ">=5.13.1" },
     { name = "urllib3", specifier = ">=2.5.0" },
-    { name = "vision-aided-loss", specifier = ">=0.1.0" },
-    { name = "wandb", specifier = ">=0.23.0" },
+    { name = "vision-aided-loss", marker = "extra == 'train'", specifier = ">=0.1.0" },
+    { name = "wandb", marker = "extra == 'train'", specifier = ">=0.23.0" },
     { name = "xformers", marker = "extra == 'gpu'", specifier = ">=0.0.33.post1" },
 ]
-provides-extras = ["gpu"]
+provides-extras = ["gpu", "train"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "nox", specifier = ">=2026.4.10" }]

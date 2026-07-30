@@ -1,6 +1,6 @@
 [project]
 name = "img2img-turbo"
-version = "0.0.3"
+version = "0.0.4"
 description = "Wrapper package for img2img-turbo with python API"
 readme = "README.md"
 authors = [
@@ -20,7 +20,6 @@ dependencies = [
     "timm>=1.0.22",
     "tokenizers>=0.22.1",
     "torch>=2.9.0",
-    "wandb>=0.23.0",
     "torchaudio>=2.9.0",
     "torchdata>=0.11.0",
     "torchmetrics>=1.8.2",
@@ -30,23 +29,27 @@ dependencies = [
     "transformers>=5.13.1",
     "urllib3>=2.5.0",
     "streamlit-keyup>=0.3.0",
-    "lpips>=0.1.4",
-    "clean-fid>=0.1.35",
     "peft>=0.19.1",
     "dominate>=2.9.1",
     "diffusers>=0.39.0",
     "gradio>=5.50.0",
-    "vision_aided_loss>=0.1.0"
+    # training-only deps moved to [train]
+]
+
+[project.optional-dependencies]
+gpu = [
+    "xformers>=0.0.33.post1",
+]
+train = [
+    "vision-aided-loss>=0.1.0",
+    "wandb>=0.23.0",
+    "lpips>=0.1.4",
+    "clean-fid>=0.1.35",
 ]
 
 [dependency-groups]
 dev = [
     "nox>=2026.4.10",
-]
-
-[project.optional-dependencies]
-gpu = [
-    "xformers>=0.0.33.post1"
 ]
 
 [build-system]
