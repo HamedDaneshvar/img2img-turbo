@@ -1,4 +1,5 @@
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 import torchvision
 import torch.nn.functional as F
 
@@ -168,7 +169,7 @@ class VitExtractor:
 
 class DinoStructureLoss:
     def __init__(self, ):
-        self.extractor = VitExtractor(model_name="dino_vitb8", device="cuda")
+        self.extractor = VitExtractor(model_name="dino_vitb8", device=device)
         self.preprocess = torchvision.transforms.Compose([
             torchvision.transforms.Resize(224),
             torchvision.transforms.ToTensor(),

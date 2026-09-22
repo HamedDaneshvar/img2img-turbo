@@ -2,6 +2,7 @@ import os
 import argparse
 from PIL import Image
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from torchvision import transforms
 from cyclegan_turbo import CycleGAN_Turbo
 from my_utils.training_utils import build_transform
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     with torch.no_grad():
         input_img = T_val(input_image)
         x_t = transforms.ToTensor()(input_img)
-        x_t = transforms.Normalize([0.5], [0.5])(x_t).unsqueeze(0).cuda()
+        x_t = transforms.Normalize([0.5], [0.5])(x_t).unsqueeze(0).to(device)
         if args.use_fp16:
             x_t = x_t.half()
         output = model(x_t, direction=args.direction, caption=args.prompt)

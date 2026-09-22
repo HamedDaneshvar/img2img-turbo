@@ -5,6 +5,7 @@ import base64
 from io import BytesIO
 
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 import torchvision.transforms.functional as F
 import gradio as gr
 
@@ -76,7 +77,7 @@ def run(image, prompt, prompt_template, style_name, seed, val_r):
     image_t = F.to_tensor(image) > 0.5
     print(f"r_val={val_r}, seed={seed}")
     with torch.no_grad():
-        c_t = image_t.unsqueeze(0).cuda().float()
+        c_t = image_t.unsqueeze(0).to(device).float()
         torch.manual_seed(seed)
         B, C, H, W = c_t.shape
         noise = torch.randn((1, 4, H // 8, W // 8), device=c_t.device)

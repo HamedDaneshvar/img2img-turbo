@@ -4,6 +4,7 @@ import lpips
 import clip
 import numpy as np
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 import torch.nn.functional as F
 import torch.utils.checkpoint
 import transformers
@@ -63,17 +64,17 @@ def main(args):
 
     if args.gan_disc_type == "vagan_clip":
         import vision_aided_loss
-        net_disc = vision_aided_loss.Discriminator(cv_type='clip', loss_type=args.gan_loss_type, device="cuda")
+        net_disc = vision_aided_loss.Discriminator(cv_type='clip', loss_type=args.gan_loss_type, device=device)
     else:
         raise NotImplementedError(f"Discriminator type {args.gan_disc_type} not implemented")
 
-    net_disc = net_disc.cuda()
+    net_disc = net_disc.to(device)
     net_disc.requires_grad_(True)
     net_disc.cv_ensemble.requires_grad_(False)
     net_disc.train()
 
-    net_lpips = lpips.LPIPS(net='vgg').cuda()
-    net_clip, _ = clip.load("ViT-B/32", device="cuda")
+    net_lpips = lpips.LPIPS(net='vgg').to(device)
+    net_clip, _ = clip.load("ViT-B/32", device=device)
     net_clip.requires_grad_(False)
     net_clip.eval()
 
@@ -151,7 +152,7 @@ def main(args):
 
     # compute the reference stats for FID tracking
     if accelerator.is_main_process and args.track_val_fid:
-        feat_model = build_feature_extractor("clean", "cuda", use_dataparallel=False)
+        feat_model = build_feature_extractor("clean", device, use_dataparallel=False)
 
         def fn_transform(x):
             x_pil = Image.fromarray(x)
@@ -159,7 +160,7 @@ def main(args):
             return np.array(out_pil)
 
         ref_stats = get_folder_features(os.path.join(args.dataset_folder, "test_B"), model=feat_model, num_workers=0, num=None,
-                shuffle=False, seed=0, batch_size=8, device=torch.device("cuda"),
+                shuffle=False, seed=0, batch_size=8, device=device,
                 mode="clean", custom_image_tranform=fn_transform, description="", verbose=True)
 
     # start the training loop
@@ -263,13 +264,13 @@ def main(args):
                         for step, batch_val in enumerate(dl_val):
                             if step >= args.num_samples_eval:
                                 break
-                            x_src = batch_val["conditioning_pixel_values"].cuda()
-                            x_tgt = batch_val["output_pixel_values"].cuda()
+                            x_src = batch_val["conditioning_pixel_values"].to(device)
+                            x_tgt = batch_val["output_pixel_values"].to(device)
                             B, C, H, W = x_src.shape
                             assert B == 1, "Use batch size 1 for eval."
                             with torch.no_grad():
                                 # forward pass
-                                x_tgt_pred = accelerator.unwrap_model(net_pix2pix)(x_src, prompt_tokens=batch_val["input_ids"].cuda(), deterministic=True)
+                                x_tgt_pred = accelerator.unwrap_model(net_pix2pix)(x_src, prompt_tokens=batch_val["input_ids"].to(device), deterministic=True)
                                 # compute the reconstruction losses
                                 loss_l2 = F.mse_loss(x_tgt_pred.float(), x_tgt.float(), reduction="mean")
                                 loss_lpips = net_lpips(x_tgt_pred.float(), x_tgt.float()).mean()
@@ -290,7 +291,7 @@ def main(args):
                                 output_pil.save(outf)
                         if args.track_val_fid:
                             curr_stats = get_folder_features(os.path.join(args.output_dir, "eval", f"fid_{global_step}"), model=feat_model, num_workers=0, num=None,
-                                    shuffle=False, seed=0, batch_size=8, device=torch.device("cuda"),
+                                    shuffle=False, seed=0, batch_size=8, device=device,
                                     mode="clean", custom_image_tranform=fn_transform, description="", verbose=True)
                             fid_score = fid_from_feats(ref_stats, curr_stats)
                             logs["val/clean_fid"] = fid_score
@@ -305,3 +306,4 @@ def main(args):
 if __name__ == "__main__":
     args = parse_args_paired_training()
     main(args)
+

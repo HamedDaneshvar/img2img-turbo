@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from torchvision import transforms
 import gradio as gr
 from src.image_prep import canny_from_pil
@@ -16,7 +17,7 @@ def process(input_image, prompt, low_threshold, high_threshold):
     input_image = input_image.resize((new_width, new_height))
     canny = canny_from_pil(input_image, low_threshold, high_threshold)
     with torch.no_grad():
-        c_t = transforms.ToTensor()(canny).unsqueeze(0).cuda()
+        c_t = transforms.ToTensor()(canny).unsqueeze(0).to(device)
         output_image = model(c_t, prompt)
         output_pil = transforms.ToPILImage()(output_image[0].cpu() * 0.5 + 0.5)
     # flippy canny values, map all 0s to 1s and 1s to 0s

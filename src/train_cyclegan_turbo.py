@@ -3,6 +3,7 @@ import gc
 import copy
 import lpips
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 import wandb
 from glob import glob
 import numpy as np
@@ -31,7 +32,7 @@ def main(args):
 
     tokenizer = AutoTokenizer.from_pretrained("stabilityai/sd-turbo", subfolder="tokenizer", revision=args.revision, use_fast=False,)
     noise_scheduler_1step = make_1step_sched()
-    text_encoder = CLIPTextModel.from_pretrained("stabilityai/sd-turbo", subfolder="text_encoder").cuda()
+    text_encoder = CLIPTextModel.from_pretrained("stabilityai/sd-turbo", subfolder="text_encoder").to(device)
 
     unet, l_modules_unet_encoder, l_modules_unet_decoder, l_modules_unet_others = initialize_unet(args.lora_rank_unet, return_lora_module_names=True)
     vae_a2b, vae_lora_target_modules = initialize_vae(args.lora_rank_vae, return_lora_module_names=True)
@@ -43,9 +44,9 @@ def main(args):
     text_encoder.requires_grad_(False)
 
     if args.gan_disc_type == "vagan_clip":
-        net_disc_a = vision_aided_loss.Discriminator(cv_type='clip', loss_type=args.gan_loss_type, device="cuda")
+        net_disc_a = vision_aided_loss.Discriminator(cv_type='clip', loss_type=args.gan_loss_type, device=device)
         net_disc_a.cv_ensemble.requires_grad_(False)  # Freeze feature extractor
-        net_disc_b = vision_aided_loss.Discriminator(cv_type='clip', loss_type=args.gan_loss_type, device="cuda")
+        net_disc_b = vision_aided_loss.Discriminator(cv_type='clip', loss_type=args.gan_loss_type, device=device)
         net_disc_b.cv_ensemble.requires_grad_(False)  # Freeze feature extractor
 
     crit_cycle, crit_idt = torch.nn.L1Loss(), torch.nn.L1Loss()
@@ -88,7 +89,7 @@ def main(args):
 
     # make the reference FID statistics
     if accelerator.is_main_process:
-        feat_model = build_feature_extractor("clean", "cuda", use_dataparallel=False)
+        feat_model = build_feature_extractor("clean", device, use_dataparallel=False)
         """
         FID reference statistics for A -> B translation
         """
@@ -102,7 +103,7 @@ def main(args):
                 _img.save(outf)
         # compute the features for the reference images
         ref_features = get_folder_features(output_dir_ref, model=feat_model, num_workers=0, num=None,
-                        shuffle=False, seed=0, batch_size=8, device=torch.device("cuda"),
+                        shuffle=False, seed=0, batch_size=8, device=device,
                         mode="clean", custom_fn_resize=None, description="", verbose=True,
                         custom_image_tranform=None)
         a2b_ref_mu, a2b_ref_sigma = np.mean(ref_features, axis=0), np.cov(ref_features, rowvar=False)
@@ -119,7 +120,7 @@ def main(args):
                 _img.save(outf)
         # compute the features for the reference images
         ref_features = get_folder_features(output_dir_ref, model=feat_model, num_workers=0, num=None,
-                        shuffle=False, seed=0, batch_size=8, device=torch.device("cuda"),
+                        shuffle=False, seed=0, batch_size=8, device=device,
                         mode="clean", custom_fn_resize=None, description="", verbose=True,
                         custom_image_tranform=None)
         b2a_ref_mu, b2a_ref_sigma = np.mean(ref_features, axis=0), np.cov(ref_features, rowvar=False)
@@ -134,7 +135,7 @@ def main(args):
         num_cycles=args.lr_num_cycles, power=args.lr_power)
 
     net_lpips = lpips.LPIPS(net='vgg')
-    net_lpips.cuda()
+    net_lpips.to(device)
     net_lpips.requires_grad_(False)
 
     max_length = min(
@@ -339,7 +340,7 @@ def main(args):
 
                     # compute val FID and DINO-Struct scores
                     if global_step % args.validation_steps == 1:
-                        _timesteps = torch.tensor([noise_scheduler_1step.config.num_train_timesteps - 1] * 1, device="cuda").long()
+                        _timesteps = torch.tensor([noise_scheduler_1step.config.num_train_timesteps - 1] * 1, device=device).long()
                         net_dino = DinoStructureLoss()
                         """
                         Evaluate "A->B"
@@ -355,18 +356,18 @@ def main(args):
                             with torch.no_grad():
                                 input_img = T_val(Image.open(input_img_path).convert("RGB"))
                                 img_a = transforms.ToTensor()(input_img)
-                                img_a = transforms.Normalize([0.5], [0.5])(img_a).unsqueeze(0).cuda()
+                                img_a = transforms.Normalize([0.5], [0.5])(img_a).unsqueeze(0).to(device)
                                 eval_fake_b = CycleGAN_Turbo.forward_with_networks(img_a, "a2b", eval_vae_enc, eval_unet,
                                     eval_vae_dec, noise_scheduler_1step, _timesteps, fixed_a2b_emb[0:1])
                                 eval_fake_b_pil = transforms.ToPILImage()(eval_fake_b[0] * 0.5 + 0.5)
                                 eval_fake_b_pil.save(outf)
-                                a = net_dino.preprocess(input_img).unsqueeze(0).cuda()
-                                b = net_dino.preprocess(eval_fake_b_pil).unsqueeze(0).cuda()
+                                a = net_dino.preprocess(input_img).unsqueeze(0).to(device)
+                                b = net_dino.preprocess(eval_fake_b_pil).unsqueeze(0).to(device)
                                 dino_ssim = net_dino.calculate_global_ssim_loss(a, b).item()
                                 l_dino_scores_a2b.append(dino_ssim)
                         dino_score_a2b = np.mean(l_dino_scores_a2b)
                         gen_features = get_folder_features(fid_output_dir, model=feat_model, num_workers=0, num=None,
-                            shuffle=False, seed=0, batch_size=8, device=torch.device("cuda"),
+                            shuffle=False, seed=0, batch_size=8, device=device,
                             mode="clean", custom_fn_resize=None, description="", verbose=True,
                             custom_image_tranform=None)
                         ed_mu, ed_sigma = np.mean(gen_features, axis=0), np.cov(gen_features, rowvar=False)
@@ -387,18 +388,18 @@ def main(args):
                             with torch.no_grad():
                                 input_img = T_val(Image.open(input_img_path).convert("RGB"))
                                 img_b = transforms.ToTensor()(input_img)
-                                img_b = transforms.Normalize([0.5], [0.5])(img_b).unsqueeze(0).cuda()
+                                img_b = transforms.Normalize([0.5], [0.5])(img_b).unsqueeze(0).to(device)
                                 eval_fake_a = CycleGAN_Turbo.forward_with_networks(img_b, "b2a", eval_vae_enc, eval_unet,
                                     eval_vae_dec, noise_scheduler_1step, _timesteps, fixed_b2a_emb[0:1])
                                 eval_fake_a_pil = transforms.ToPILImage()(eval_fake_a[0] * 0.5 + 0.5)
                                 eval_fake_a_pil.save(outf)
-                                a = net_dino.preprocess(input_img).unsqueeze(0).cuda()
-                                b = net_dino.preprocess(eval_fake_a_pil).unsqueeze(0).cuda()
+                                a = net_dino.preprocess(input_img).unsqueeze(0).to(device)
+                                b = net_dino.preprocess(eval_fake_a_pil).unsqueeze(0).to(device)
                                 dino_ssim = net_dino.calculate_global_ssim_loss(a, b).item()
                                 l_dino_scores_b2a.append(dino_ssim)
                         dino_score_b2a = np.mean(l_dino_scores_b2a)
                         gen_features = get_folder_features(fid_output_dir, model=feat_model, num_workers=0, num=None,
-                            shuffle=False, seed=0, batch_size=8, device=torch.device("cuda"),
+                            shuffle=False, seed=0, batch_size=8, device=device,
                             mode="clean", custom_fn_resize=None, description="", verbose=True,
                             custom_image_tranform=None)
                         ed_mu, ed_sigma = np.mean(gen_features, axis=0), np.cov(gen_features, rowvar=False)
@@ -417,3 +418,4 @@ def main(args):
 if __name__ == "__main__":
     args = parse_args_unpaired_training()
     main(args)
+

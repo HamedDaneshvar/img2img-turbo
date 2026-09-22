@@ -4,6 +4,7 @@ import sys
 import copy
 from tqdm import tqdm
 import torch
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 from transformers import AutoTokenizer, CLIPTextModel
 from diffusers import AutoencoderKL, UNet2DConditionModel
 from diffusers.utils.peft_utils import set_weights_and_activate_adapters
@@ -30,17 +31,17 @@ class Pix2Pix_Turbo(torch.nn.Module):
     def __init__(self, pretrained_name=None, pretrained_path=None, ckpt_folder="checkpoints", lora_rank_unet=8, lora_rank_vae=4):
         super().__init__()
         self.tokenizer = AutoTokenizer.from_pretrained("stabilityai/sd-turbo", subfolder="tokenizer")
-        self.text_encoder = CLIPTextModel.from_pretrained("stabilityai/sd-turbo", subfolder="text_encoder").cuda()
+        self.text_encoder = CLIPTextModel.from_pretrained("stabilityai/sd-turbo", subfolder="text_encoder").to(device)
         self.sched = make_1step_sched()
 
         vae = AutoencoderKL.from_pretrained("stabilityai/sd-turbo", subfolder="vae")
         vae.encoder.forward = my_vae_encoder_fwd.__get__(vae.encoder, vae.encoder.__class__)
         vae.decoder.forward = my_vae_decoder_fwd.__get__(vae.decoder, vae.decoder.__class__)
         # add the skip connection convs
-        vae.decoder.skip_conv_1 = torch.nn.Conv2d(512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
-        vae.decoder.skip_conv_2 = torch.nn.Conv2d(256, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
-        vae.decoder.skip_conv_3 = torch.nn.Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
-        vae.decoder.skip_conv_4 = torch.nn.Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False).cuda()
+        vae.decoder.skip_conv_1 = torch.nn.Conv2d(512, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).to(device)
+        vae.decoder.skip_conv_2 = torch.nn.Conv2d(256, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).to(device)
+        vae.decoder.skip_conv_3 = torch.nn.Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False).to(device)
+        vae.decoder.skip_conv_4 = torch.nn.Conv2d(128, 256, kernel_size=(1, 1), stride=(1, 1), bias=False).to(device)
         vae.decoder.ignore_skip = False
         unet = UNet2DConditionModel.from_pretrained("stabilityai/sd-turbo", subfolder="unet")
 
@@ -155,11 +156,11 @@ class Pix2Pix_Turbo(torch.nn.Module):
             self.target_modules_unet = target_modules_unet
 
         # unet.enable_xformers_memory_efficient_attention()
-        unet.to("cuda")
-        vae.to("cuda")
+        unet.to(device)
+        vae.to(device)
         self.unet, self.vae = unet, vae
         self.vae.decoder.gamma = 1
-        self.timesteps = torch.tensor([999], device="cuda").long()
+        self.timesteps = torch.tensor([999], device=device).long()
         self.text_encoder.requires_grad_(False)
 
     def set_eval(self):
@@ -248,3 +249,4 @@ class Pix2Pix_Turbo(torch.nn.Module):
         sd["state_dict_unet"] = {k: v for k, v in self.unet.state_dict().items() if "lora" in k or "conv_in" in k}
         sd["state_dict_vae"] = {k: v for k, v in self.vae.state_dict().items() if "lora" in k or "skip" in k}
         torch.save(sd, outf)
+

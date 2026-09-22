@@ -32,5 +32,3 @@ class FakeClipModule:
 
 # Override sys.modules['clip'] with our fake module
 sys.modules['clip'] = FakeClipModule()
-
-print("CLIP patch applied: Using open_clip-torch as backend for 'clip' imports.")
